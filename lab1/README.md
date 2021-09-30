@@ -1,6 +1,6 @@
 # Lab1
 
-##### Completed Lab Sections:
+#### Completed Lab Sections:
 *	Custom Neural Net
 --	Accuracy – 93.23%
 --	Implemented the sigmoid and sigmoid derivative functions.
@@ -15,7 +15,7 @@
 --	Normalized image data values from 0--255 to a range of 0.0--1.0
 --	Implemented a F1 score table and a confusion matrix with accuracy values
 
-##### Resources Used:
+#### Resources Used:
 *	Lecture Slides
 --	Slides 2 – Neural Network and Backpropagation basics
 --	Slides 3 – Backpropagation and TensorFlow/Keras
@@ -30,7 +30,7 @@
 --	What is a Confusion Matrix in Machine Learning? 
 
 
-##### Lab Implementation Summary:
+#### Lab Implementation Summary:
 *	Guesser Algorithm
 --	This algorithm just randomly guesses the labels with a set seed of 1618 for deterministic behavior and it achieves an understandably low accuracy of 9.68%.
 
