@@ -10,7 +10,6 @@ import tensorflow as tf                                                  #
 from tensorflow import keras                                             #
 from tensorflow.keras.utils import to_categorical                        #
 import random                                                            #
-import tqdm                                                              #
                                                                          #
 ##########################################################################
 
@@ -27,10 +26,14 @@ NN2L_MBS    = 100                                                        #
 NN2L_LR     = 0.01                                                       #
 NN2L_USE_MB = True                                                       #
                                                                          #
+# Keras neural network instance parameters                               #
+KERAS_EPOCHS = 20                                                        #
+KERAS_LR     = 0.001                                                     #
+                                                                         #
 # Use these to set the algorithm to use.                                 #
 #ALGORITHM = "guesser"                                                   #
-ALGORITHM = "custom_net"                                                #
-#ALGORITHM = "tf_net"                                                     #
+#ALGORITHM = "custom_net"                                                #
+ALGORITHM = "tf_net"                                                     #
                                                                          #
 ##########################################################################
 
@@ -248,8 +251,31 @@ def trainModel(data):
 
     elif ALGORITHM == "tf_net":
         print("Building and training TF_NN.")
-        print("Not yet implemented.")                   #TODO: Write code to build and train your keras neural net.
-        return None
+        
+        # Initialize Keras sequential model
+        model = keras.Sequential()
+
+        # Add a flattening layer to the model
+        model.add(keras.layers.Flatten())
+
+        # Add a hidden layer to the model
+        model.add(keras.layers.Dense(NUM_NEURONS, activation = tf.nn.sigmoid))
+
+        # Add an output layer to the model
+        model.add(keras.layers.Dense(NUM_CLASSES, activation = tf.nn.softmax))
+
+        # Initialize model optimizer function
+        optim = tf.optimizers.Adam(KERAS_LR)
+
+        # Compile model
+        model.compile(loss="categorical_crossentropy", optimizer=optim, metrics=["accuracy"])
+
+        # Train model
+        model.fit(xTrain, yTrain, epochs=KERAS_EPOCHS)
+
+        print("\n\n")
+
+        return model
 
     else:
         raise ValueError("Algorithm not recognized.")
@@ -271,8 +297,13 @@ def runModel(data, model):
 
     elif ALGORITHM == "tf_net":
         print("Testing TF_NN.")
-        print("Not yet implemented.")                   #TODO: Write code to run your keras neural net.
-        return None
+        
+        # Run Keras neural network model and get predictions
+        pred = model.predict(data)
+        pred = normalize(pred)
+
+        return np.array(pred)
+
     else:
         raise ValueError("Algorithm not recognized.")
 
