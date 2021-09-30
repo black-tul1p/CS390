@@ -1,4 +1,4 @@
-# Lab work for CS390-NIP course at Purdue University
+# Lab1
 
 ##### Completed Lab Sections:
 *	Custom Neural Net
