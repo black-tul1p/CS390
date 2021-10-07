@@ -52,11 +52,23 @@ elif DATASET == "mnist_f":                                               #
     IZ = 1                                                               #
     IS = 784                                                             #
 elif DATASET == "cifar_10":                                              #
-    pass                                 # TODO: Add this case.          #
+    NUM_CLASSES = 10                                                     #
+    IH = 32                                                              #
+    IW = 32                                                              #
+    IZ = 3                                                               #
+    IS = 1024                                                            #
 elif DATASET == "cifar_100_f":                                           #
-    pass                                 # TODO: Add this case.          #
+    NUM_CLASSES = 100                                                    #
+    IH = 32                                                              #
+    IW = 32                                                              #
+    IZ = 3                                                               #
+    IS = 1024                                                            #
 elif DATASET == "cifar_100_c":                                           #
-    pass                                 # TODO: Add this case.          #
+    NUM_CLASSES = 20                                                     #
+    IH = 32                                                              #
+    IW = 32                                                              #
+    IZ = 3                                                               #
+    IS = 1024                                                            #
                                                                          #
 ##########################################################################
 
