@@ -27,6 +27,14 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'                                 #
                                                                          #
 ##########################################################################
 
+############################ TF Hyperparameters ##########################
+                                                                         #
+TF_EPOCHS   = 10                                                         #
+TF_LR       = 0.001                                                      #
+TF_DROP_OUT = 0.20                                                       #
+                                                                         #
+##########################################################################
+
 ########################### Global Constants #############################
                                                                          #
 ALGORITHM = "guesser"                                                    #
@@ -85,14 +93,90 @@ def guesserClassifier(xTest):
     return np.array(ans)
 
 
-def buildTFNeuralNet(x, y, eps = 6):
-    pass        #TODO: Implement a standard ANN here.
-    return None
+def buildTFNeuralNet(x, y, eps=TF_EPOCHS, lr=TF_LR):
+    print("Building and training TF_NN.")
+        
+    # Initialize Keras sequential model
+    model = keras.Sequential()
+
+    # Add a flattening layer to the model
+    model.add(keras.layers.Flatten())
+
+    # Add a dense layer to the model
+    model.add(keras.layers.Dense(NUM_NEURONS, activation=tf.nn.sigmoid))
+
+    # Add an output layer to the model
+    model.add(keras.layers.Dense(NUM_CLASSES, activation=tf.nn.softmax))
+
+    # Initialize model optimizer function
+    optim = tf.optimizers.Adam(learning_rate=lr)
+
+    # Compile model
+    model.compile(loss="categorical_crossentropy", optimizer=optim, metrics=["accuracy"])
+
+    # Train model
+    model.fit(xTrain, yTrain, epochs=TF_EPOCHS)
+    print("\n\n")
+
+    return model
 
 
-def buildTFConvNet(x, y, eps = 10, dropout = True, dropRate = 0.2):
-    pass        #TODO: Implement a CNN here. dropout option is required.
-    return None
+
+def buildTFConvNet(x, y, eps=TF_EPOCHS, lr=TF_LR, dropout=True, dropRate=TF_DROP_OUT):
+    print("Building and training TF_CNN.")
+        
+    # Initialize Keras sequential model
+    model = keras.Sequential()
+
+    # Add convolutional layers to the model
+    model.add(keras.layers.Conv2D(32, kernel_size=[3, 3], activation=tf.nn.relu, input_shape=[IH, IW, IZ]))
+    model.add(keras.layers.Conv2D(32, kernel_size=[3, 3], activation=tf.nn.relu)
+
+    # Add pooling and normalization layers to the model
+    model.add(keras.layers.MaxPooling2D(pool_size=[2, 2]))
+    model.add(keras.layers.BatchNormalization())
+
+    # Add convolutional layers to the model
+    model.add(keras.layers.Conv2D(32, kernel_size=[3, 3], activation=tf.nn.relu, input_shape=[IH, IW, IZ]))
+    model.add(keras.layers.Conv2D(32, kernel_size=[3, 3], activation=tf.nn.relu)
+
+    # Add pooling and normalization layers to the model
+    model.add(keras.layers.MaxPooling2D(pool_size=[2, 2]))
+    model.add(keras.layers.BatchNormalization())
+
+    # Add a flattening layer to the model
+    model.add(keras.layers.Flatten())
+
+    # Add a dense layer to the model
+    model.add(keras.layers.Dense(256, activation=tf.nn.relu))
+
+    # Dropout handling
+    if (dropout):
+        # Add a dropout layer to the model
+        model.add(keras.layers.Dropout(dropRate, input_shape=[2]))
+
+    # Add a dense layer to the model
+    model.add(keras.layers.Dense(256, activation=tf.nn.relu))
+
+    # Dropout handling
+    if (dropout):
+        # Add a dropout layer to the model
+        model.add(keras.layers.Dropout(dropRate, input_shape=[2]))
+
+    # Add an output layer to the model
+    model.add(keras.layers.Dense(NUM_CLASSES, activation=tf.nn.softmax))
+
+    # Initialize model optimizer function
+    optim = tf.optimizers.Adam(learning_rate=lr)
+
+    # Compile model
+    model.compile(loss="categorical_crossentropy", optimizer=optim, metrics=["accuracy"])
+
+    # Train model
+    model.fit(xTrain, yTrain, epochs=TF_EPOCHS)
+    print("\n\n")
+
+    return model
 
 ##########################################################################
 
