@@ -1,51 +1,66 @@
+##########################################################################
+#      Name  : Divay Gupta      |     Email : gupta576@purdue.edu        #
+##########################################################################
 
-import os
-import numpy as np
-import tensorflow as tf
-from tensorflow import keras
-from tensorflow.keras.utils import to_categorical
-import random
+################################ Imports #################################
+                                                                         #
+import os                                                                #
+import numpy as np                                                       #
+import tensorflow as tf                                                  #
+from tensorflow import keras                                             #
+from tensorflow.keras.utils import to_categorical                        #
+import random                                                            #
+                                                                         #
+##########################################################################
 
+######################### Basic Initialization ###########################
+                                                                         #
+# Setting random seeds to keep everything deterministic.                 #
+random.seed(1618)                                                        #
+np.random.seed(1618)                                                     #
+tf.random.set_seed(1618)                                                 #
+#tf.set_random_seed(1618)   # Uncomment for TF1.                         #
+                                                                         #
+# Disable some troublesome logging.                                      #
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'                                 #
+#tf.logging.set_verbosity(tf.logging.ERROR)   # Uncomment for TF1.       #
+                                                                         #
+##########################################################################
 
-random.seed(1618)
-np.random.seed(1618)
-#tf.set_random_seed(1618)   # Uncomment for TF1.
-tf.random.set_seed(1618)
+########################### Global Constants #############################
+                                                                         #
+ALGORITHM = "guesser"                                                    #
+#ALGORITHM = "tf_net"                                                    #
+#ALGORITHM = "tf_conv"                                                   #
+                                                                         #
+DATASET = "mnist_d"                                                      #
+#DATASET = "mnist_f"                                                     #
+#DATASET = "cifar_10"                                                    #
+#DATASET = "cifar_100_f"                                                 #
+#DATASET = "cifar_100_c"                                                 #
+                                                                         #
+if DATASET == "mnist_d":                                                 #
+    NUM_CLASSES = 10                                                     #
+    IH = 28                                                              #
+    IW = 28                                                              #
+    IZ = 1                                                               #
+    IS = 784                                                             #
+elif DATASET == "mnist_f":                                               #
+    NUM_CLASSES = 10                                                     #
+    IH = 28                                                              #
+    IW = 28                                                              #
+    IZ = 1                                                               #
+    IS = 784                                                             #
+elif DATASET == "cifar_10":                                              #
+    pass                                 # TODO: Add this case.          #
+elif DATASET == "cifar_100_f":                                           #
+    pass                                 # TODO: Add this case.          #
+elif DATASET == "cifar_100_c":                                           #
+    pass                                 # TODO: Add this case.          #
+                                                                         #
+##########################################################################
 
-#tf.logging.set_verbosity(tf.logging.ERROR)   # Uncomment for TF1.
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
-
-ALGORITHM = "guesser"
-#ALGORITHM = "tf_net"
-#ALGORITHM = "tf_conv"
-
-DATASET = "mnist_d"
-#DATASET = "mnist_f"
-#DATASET = "cifar_10"
-#DATASET = "cifar_100_f"
-#DATASET = "cifar_100_c"
-
-if DATASET == "mnist_d":
-    NUM_CLASSES = 10
-    IH = 28
-    IW = 28
-    IZ = 1
-    IS = 784
-elif DATASET == "mnist_f":
-    NUM_CLASSES = 10
-    IH = 28
-    IW = 28
-    IZ = 1
-    IS = 784
-elif DATASET == "cifar_10":
-    pass                                 # TODO: Add this case.
-elif DATASET == "cifar_100_f":
-    pass                                 # TODO: Add this case.
-elif DATASET == "cifar_100_c":
-    pass                                 # TODO: Add this case.
-
-
-#=========================<Classifier Functions>================================
+########################## Classifier Functions ##########################
 
 def guesserClassifier(xTest):
     ans = []
@@ -65,7 +80,9 @@ def buildTFConvNet(x, y, eps = 10, dropout = True, dropRate = 0.2):
     pass        #TODO: Implement a CNN here. dropout option is required.
     return None
 
-#=========================<Pipeline Functions>==================================
+##########################################################################
+
+########################### Pipeline Functions ###########################
 
 def getRawData():
     if DATASET == "mnist_d":
@@ -158,9 +175,9 @@ def evalResults(data, preds):
     print("Classifier accuracy: %f%%" % (accuracy * 100))
     print()
 
+##########################################################################
 
-
-#=========================<Main>================================================
+################################## Main ##################################
 
 def main():
     raw = getRawData()
@@ -173,3 +190,5 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+##########################################################################
