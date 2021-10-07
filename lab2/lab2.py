@@ -99,18 +99,27 @@ def buildTFConvNet(x, y, eps = 10, dropout = True, dropRate = 0.2):
 ########################### Pipeline Functions ###########################
 
 def getRawData():
+    # MNIST Digit Dataset
     if DATASET == "mnist_d":
         mnist = tf.keras.datasets.mnist
         (xTrain, yTrain), (xTest, yTest) = mnist.load_data()
+    # MNIST Fashion Dataset
     elif DATASET == "mnist_f":
         mnist = tf.keras.datasets.fashion_mnist
         (xTrain, yTrain), (xTest, yTest) = mnist.load_data()
+    # CFAR10 Dataset
     elif DATASET == "cifar_10":
-        pass      # TODO: Add this case.
+        cifar_10 = tf.keras.datasets.cifar10.load_data()
+        (xTrain, yTrain), (xTest, yTest) = cifar_10.load_data()
+    # CFAR100 Dataset (Fine)
     elif DATASET == "cifar_100_f":
-        pass      # TODO: Add this case.
+        cifar_100_f = tf.keras.datasets.cifar100.load_data()
+        (xTrain, yTrain), (xTest, yTest) = cifar_100_f.load_data(label_mode = "fine")
+    # CFAR100 Dataset (Coarse)
     elif DATASET == "cifar_100_c":
-        pass      # TODO: Add this case.
+        cifar_100_c = tf.keras.datasets.cifar100.load_data()
+        (xTrain, yTrain), (xTest, yTest) = cifar_100_c.load_data(label_mode = "coarse")
+    # Error
     else:
         raise ValueError("Dataset not recognized.")
     print("Dataset: %s" % DATASET)
