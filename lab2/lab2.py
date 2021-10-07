@@ -69,6 +69,8 @@ elif DATASET == "cifar_100_c":                                           #
     IW = 32                                                              #
     IZ = 3                                                               #
     IS = 1024                                                            #
+else:                                                                    #
+    raise ValueError("Dataset does not exist or not available")          #
                                                                          #
 ##########################################################################
 
