@@ -126,7 +126,7 @@ def getRawData():
     print("Shape of xTrain dataset: %s." % str(xTrain.shape))
     print("Shape of yTrain dataset: %s." % str(yTrain.shape))
     print("Shape of xTest dataset: %s." % str(xTest.shape))
-    print("Shape of yTest dataset: %s." % str(yTest.shape))
+    print("Shape of yTest dataset: %s.\n" % str(yTest.shape))
     return ((xTrain, yTrain), (xTest, yTest))
 
 
@@ -189,14 +189,82 @@ def runModel(data, model):
 
 
 def evalResults(data, preds):
+    # Unpack data
     xTest, yTest = data
+    yTest = np.argmax(yTest, axis = 1)
+    preds = np.argmax(preds, axis = 1)
+
+    # Calculate accuracy
     acc = 0
     for i in range(preds.shape[0]):
         if np.array_equal(preds[i], yTest[i]):   acc = acc + 1
     accuracy = acc / preds.shape[0]
-    print("Classifier algorithm: %s" % ALGORITHM)
+
+    # Initialize confusion matrix and update values
+    confMat = np.zeros((NUM_CLASSES, NUM_CLASSES), dtype = np.int32)
+    for i in range(preds.shape[0]):
+        confMat[yTest[i]][preds[i]] += 1
+
+    # Calculate confusion matrix sum
+    confMatSum = np.sum(confMat)
+
+    # Initialize F1 scores vector and update values
+    f1 = np.zeros(NUM_CLASSES)
+    for i in range(NUM_CLASSES):
+        # Calculate TPs (True Positives)
+        tp = confMat[i][i]
+
+        # Calculate FPs (False Positives)
+        fp = sum(confMat[i][j] for j in range(NUM_CLASSES) if (i != j))
+
+        # Calculate FNs (False Negatives)
+        fn = sum(confMat[j][i] for j in range(NUM_CLASSES) if (i != j))
+
+        # Calculate F1 Score For Class Label
+        f1[i] = float(tp / (tp + (0.5 * (fp + fn))))
+
+    # Display classifier information
+    print("Classifier algorithm: %s" % (ALGORITHM))
     print("Classifier accuracy: %f%%" % (accuracy * 100))
+
+    ######################### Confusion Matrix #########################
+
+    # Print confusion matrix title
+    print("\n" + "#" * 28 + " Confusion Matrix " + "#" * 28)
+
+    # Print column labels
+    print(" " * 3, end = "")
+    for i in range(NUM_CLASSES):
+        print("%6d" % (i), end = " ")
+    print("\n  ┌" + "─" * (7*NUM_CLASSES) + "┐" , end = "")
     print()
+
+    # Print confusion matrix rows
+    for i in range(len(confMat)):
+        print("%d │" % i, end = " ")
+        for val in confMat[i]:
+            print("{:5d}".format(val), end=" ")
+            print("│", end="")
+        if i != len(confMat) - 1:
+            print()
+    print("\n  └" + "─" * (7*NUM_CLASSES) + "┘")
+
+    ####################################################################
+
+    ########################### F1 Score Table #########################
+
+    # Print F1 score title
+    print("\n" + "#" * 30 + " F1 Scores " + "#" * 30)
+    
+    # Print column labels
+    for i in range(NUM_CLASSES):
+        print("%7d" % (i), end = "")
+    print()
+
+    # Print F1 Scores
+    print(np.around(f1, decimals = 4))
+
+    ####################################################################
 
 ##########################################################################
 
