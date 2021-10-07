@@ -103,7 +103,7 @@ def buildTFNeuralNet(x, y, eps=TF_EPOCHS, lr=TF_LR):
     model.add(keras.layers.Flatten())
 
     # Add a dense layer to the model
-    model.add(keras.layers.Dense(NUM_NEURONS, activation=tf.nn.sigmoid))
+    model.add(keras.layers.Dense(512, activation=tf.nn.sigmoid))
 
     # Add an output layer to the model
     model.add(keras.layers.Dense(NUM_CLASSES, activation=tf.nn.softmax))
@@ -130,7 +130,7 @@ def buildTFConvNet(x, y, eps=TF_EPOCHS, lr=TF_LR, dropout=True, dropRate=TF_DROP
 
     # Add convolutional layers to the model
     model.add(keras.layers.Conv2D(32, kernel_size=[3, 3], activation=tf.nn.relu, input_shape=[IH, IW, IZ]))
-    model.add(keras.layers.Conv2D(32, kernel_size=[3, 3], activation=tf.nn.relu)
+    model.add(keras.layers.Conv2D(32, kernel_size=[3, 3], activation=tf.nn.relu))
 
     # Add pooling and normalization layers to the model
     model.add(keras.layers.MaxPooling2D(pool_size=[2, 2]))
@@ -138,7 +138,7 @@ def buildTFConvNet(x, y, eps=TF_EPOCHS, lr=TF_LR, dropout=True, dropRate=TF_DROP
 
     # Add convolutional layers to the model
     model.add(keras.layers.Conv2D(32, kernel_size=[3, 3], activation=tf.nn.relu, input_shape=[IH, IW, IZ]))
-    model.add(keras.layers.Conv2D(32, kernel_size=[3, 3], activation=tf.nn.relu)
+    model.add(keras.layers.Conv2D(32, kernel_size=[3, 3], activation=tf.nn.relu))
 
     # Add pooling and normalization layers to the model
     model.add(keras.layers.MaxPooling2D(pool_size=[2, 2]))
