@@ -2,22 +2,20 @@
 
 #### Resources Used:
 *	Lecture Slides
->	Slides 5 – Convolutional Neural Networks, Pooling, Optimization
->	Slides 6 – Convolutional Neural Networks 2, CNNS using TensorFlow and Keras
+```
+	Slides 5 – Convolutional Neural Networks, Pooling, Optimization
+	Slides 6 – Convolutional Neural Networks 2, CNNS using TensorFlow and Keras
+```
 
 *	API Documentation Links
->	TensorFlow
->	Keras
+```
+	TensorFlow
+	Keras
+```
 
-*	Miscellaneous Links
->	Using TensorFlow’s Batch Normalization Correctly
->	Building a Convolutional Neural Network (CNN) in Keras
-
-
-Lab Implementation Summary:
+#### Lab Implementation Summary:
 *	TensorFlow ANN (tf_net)
->	Implemented using TensorFlow and Keras
->	Fully functional
+Implemented using TensorFlow and Keras; fully functional
 ```
 	Accuracy:
 
@@ -30,8 +28,8 @@ Lab Implementation Summary:
 ```
 
 *	TensorFlow CNN (tf_conv)
->	Implemented using TensorFlow and Keras 
->	Fully functional
+Implemented using TensorFlow and Keras 
+Fully functional
 ```
 	Accuracy:
 		MNIST_d		: 	99.35%
@@ -42,8 +40,8 @@ Lab Implementation Summary:
 ```
 
 *	Pipeline
->	Can use the TensorFlow ANN by setting ALGORITHM to “tf_net”
->	Can use the TensorFlow CNN by setting ALGORITHM to “tf_conv”
+Can use the TensorFlow ANN by setting ALGORITHM to “tf_net”
+Can use the TensorFlow CNN by setting ALGORITHM to “tf_conv”
 ```	
 Can train the neural nets on the following datasets:
 		MNIST_d 
