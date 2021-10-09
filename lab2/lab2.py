@@ -22,7 +22,8 @@ tf.random.set_seed(1618)                                                 #
 #tf.set_random_seed(1618)   # Uncomment for TF1.                         #
                                                                          #
 # Disable some troublesome logging.                                      #
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'                                 #
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'                                 #
+os.environ["CUDA_VISIBLE_DEVICES"] = "-1"                                #
 #tf.logging.set_verbosity(tf.logging.ERROR)   # Uncomment for TF1.       #
                                                                          #
 ##########################################################################
@@ -37,48 +38,44 @@ TF_DROP_OUT = 0.20                                                       #
 
 ########################### Global Constants #############################
                                                                          #
-ALGORITHM = "guesser"                                                    #
-#ALGORITHM = "tf_net"                                                    #
+#ALGORITHM = "guesser"                                                    #
+ALGORITHM = "tf_net"                                                    #
 #ALGORITHM = "tf_conv"                                                   #
                                                                          #
-DATASET = "mnist_d"                                                      #
+#DATASET = "mnist_d"                                                     #
 #DATASET = "mnist_f"                                                     #
 #DATASET = "cifar_10"                                                    #
 #DATASET = "cifar_100_f"                                                 #
-#DATASET = "cifar_100_c"                                                 #
+DATASET = "cifar_100_c"                                                 #
                                                                          #
 if DATASET == "mnist_d":                                                 #
     NUM_CLASSES = 10                                                     #
     IH = 28                                                              #
     IW = 28                                                              #
     IZ = 1                                                               #
-    IS = 784                                                             #
 elif DATASET == "mnist_f":                                               #
     NUM_CLASSES = 10                                                     #
     IH = 28                                                              #
     IW = 28                                                              #
     IZ = 1                                                               #
-    IS = 784                                                             #
 elif DATASET == "cifar_10":                                              #
     NUM_CLASSES = 10                                                     #
     IH = 32                                                              #
     IW = 32                                                              #
     IZ = 3                                                               #
-    IS = 1024                                                            #
 elif DATASET == "cifar_100_f":                                           #
     NUM_CLASSES = 100                                                    #
     IH = 32                                                              #
     IW = 32                                                              #
     IZ = 3                                                               #
-    IS = 1024                                                            #
 elif DATASET == "cifar_100_c":                                           #
     NUM_CLASSES = 20                                                     #
     IH = 32                                                              #
     IW = 32                                                              #
     IZ = 3                                                               #
-    IS = 1024                                                            #
 else:                                                                    #
     raise ValueError("Dataset does not exist or not available")          #
+IS = IH * IW * IZ                                                        #
                                                                          #
 ##########################################################################
 
@@ -93,7 +90,7 @@ def guesserClassifier(xTest):
     return np.array(ans)
 
 
-def buildTFNeuralNet(x, y, eps=TF_EPOCHS, lr=TF_LR):
+def buildTFNeuralNet(xTrain, yTrain, eps=TF_EPOCHS, lr=TF_LR):
     print("Building and training TF_NN.")
         
     # Initialize Keras sequential model
@@ -103,7 +100,7 @@ def buildTFNeuralNet(x, y, eps=TF_EPOCHS, lr=TF_LR):
     model.add(keras.layers.Flatten())
 
     # Add a dense layer to the model
-    model.add(keras.layers.Dense(512, activation=tf.nn.sigmoid))
+    model.add(keras.layers.Dense(512, activation=tf.nn.selu))
 
     # Add an output layer to the model
     model.add(keras.layers.Dense(NUM_CLASSES, activation=tf.nn.softmax))
@@ -122,7 +119,7 @@ def buildTFNeuralNet(x, y, eps=TF_EPOCHS, lr=TF_LR):
 
 
 
-def buildTFConvNet(x, y, eps=TF_EPOCHS, lr=TF_LR, dropout=True, dropRate=TF_DROP_OUT):
+def buildTFConvNet(xTrain, yTrain, eps=TF_EPOCHS, lr=TF_LR, dropout=True, dropRate=TF_DROP_OUT):
     print("Building and training TF_CNN.")
         
     # Initialize Keras sequential model
@@ -193,15 +190,15 @@ def getRawData():
         (xTrain, yTrain), (xTest, yTest) = mnist.load_data()
     # CFAR10 Dataset
     elif DATASET == "cifar_10":
-        cifar_10 = tf.keras.datasets.cifar10.load_data()
+        cifar_10 = tf.keras.datasets.cifar10
         (xTrain, yTrain), (xTest, yTest) = cifar_10.load_data()
     # CFAR100 Dataset (Fine)
     elif DATASET == "cifar_100_f":
-        cifar_100_f = tf.keras.datasets.cifar100.load_data()
+        cifar_100_f = tf.keras.datasets.cifar100
         (xTrain, yTrain), (xTest, yTest) = cifar_100_f.load_data(label_mode = "fine")
     # CFAR100 Dataset (Coarse)
     elif DATASET == "cifar_100_c":
-        cifar_100_c = tf.keras.datasets.cifar100.load_data()
+        cifar_100_c = tf.keras.datasets.cifar100
         (xTrain, yTrain), (xTest, yTest) = cifar_100_c.load_data(label_mode = "coarse")
     # Error
     else:
