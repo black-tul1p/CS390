@@ -7,7 +7,7 @@
 	Slides 6 – Convolutional Neural Networks 2, CNNS using TensorFlow and Keras
 ```
 
-*	API Documentation Links
+*	API Documentation Used
 ```
 	TensorFlow
 	Keras
