@@ -16,14 +16,14 @@ def main():
 
     NN = input("Enter the Neural Net you want metrics for [ANN / CNN]: ")
 
-    if NN == "ANN":
+    if NN.lower() == "ann":
         plt.bar(labels, ann_accs)
         plt.title("Artificial Neural Network Dataset vs. Accuracy")
         plt.xlabel('Datasets', fontsize=14)
         plt.ylabel('Accuracy', fontsize=12)
         plt.ylim(0,100)
         plt.show()
-    elif NN == "CNN":
+    elif NN.lower() == "cnn":
         plt.bar(labels, cnn_accs)
         plt.title("Convolutional Neural Network Dataset vs. Accuracy")
         plt.xlabel('Datasets', fontsize=14)
