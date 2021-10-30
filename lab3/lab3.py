@@ -4,64 +4,74 @@
 
 ################################ Imports #################################
                                                                          #
-import os
-import numpy as np
-import tensorflow as tf
-from tensorflow import keras
-import tensorflow.keras.backend as K
-import random
-from scipy.misc import imsave, imresize
-from scipy.optimize import fmin_l_bfgs_b   # https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.fmin_l_bfgs_b.html
-from tensorflow.keras.applications import vgg19
-from tensorflow.keras.preprocessing.image import load_img, img_to_array
-import warnings
+import os                                                                #
+import cv2                                                               #
+import random                                                            #
+import warnings                                                          #
+import numpy as np                                                       #
+import tensorflow as tf                                                  #
+from tensorflow import keras                                             #
+import tensorflow.keras.backend as K                                     #
+from scipy.misc import imsave, imresize                                  #
+from scipy.optimize import fmin_l_bfgs_b                                 #
+from tensorflow.keras.applications import vgg19                          #
+from tensorflow.keras.preprocessing.image import load_img, img_to_array  #
                                                                          #
 ##########################################################################
 
 ######################### Basic Initialization ###########################
                                                                          #
-random.seed(1618)
-np.random.seed(1618)
-#tf.set_random_seed(1618)   # Uncomment for TF1.
-tf.random.set_seed(1618)
-
-#tf.logging.set_verbosity(tf.logging.ERROR)   # Uncomment for TF1.
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
-
-CONTENT_IMG_PATH = "./custom/fujairah.jpg"
-STYLE_IMG_PATH   = "./reference/pointillism.jpg"
-OUTPUT_IMG_PATH  = "./output" 
+random.seed(1618)                                                        #
+np.random.seed(1618)                                                     #
+#tf.set_random_seed(1618)   # Uncomment for TF1.                         #
+tf.random.set_seed(1618)                                                 #
+                                                                         #
+#tf.logging.set_verbosity(tf.logging.ERROR)   # Uncomment for TF1.       #
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'                                 #
+                                                                         #
+CONTENT_IMG_PATH = "./custom/fujairah.jpg"                               #
+STYLE_IMG_PATH   = "./reference/pointillism.jpg"                         #
+OUTPUT_IMG_PATH  = "./output"                                            #
                                                                          #
 ##########################################################################
 
 ########################### Global Constants #############################
                                                                          #
-CONTENT_IMG_H = 800
-CONTENT_IMG_W = 500
-
-STYLE_IMG_H = 800
-STYLE_IMG_W = 500
-
-TRANSFER_ROUNDS = 3
+CONTENT_IMG_H = 800                                                      #
+CONTENT_IMG_W = 500                                                      #
+                                                                         #
+STYLE_IMG_H = 800                                                        #
+STYLE_IMG_W = 500                                                        #
+                                                                         #
+TRANSFER_ROUNDS = 3                                                      #
                                                                          #
 ##########################################################################
 
 ############################ TF Hyperparameters ##########################
                                                                          #
-CONTENT_WEIGHT = 0.1    # Alpha weight.
-STYLE_WEIGHT = 1.0      # Beta weight.
-TOTAL_WEIGHT = 1.0
+CONTENT_WEIGHT = 0.1    # Alpha weight.                                  #
+STYLE_WEIGHT = 1.0      # Beta weight.                                   #
+TOTAL_WEIGHT = 1.0                                                       #
                                                                          #
 ##########################################################################
 
 
 
 ############################ Helper Functions ############################
-'''
-TODO: implement this.
-This function should take the tensor and re-convert it to an image.
-'''
+
 def deprocessImage(img):
+    # Reshape input image
+    img = img.reshape((STYLE_IMG_H, STYLE_IMG_H, 3))
+
+    # Reverse VGG19 transformations
+    img[:, :, 0] += 103.939
+    img[:, :, 1] += 116.779
+    img[:, :, 2] += 123.68
+
+    # Revert image colorspace to RGB
+    img = img[:, :, ::-1]
+    img = np.clip(img, 0, 255).astype('uint8')
+
     return img
 
 
@@ -174,5 +184,5 @@ def main():
 
 if __name__ == "__main__":
     main()
-    
+
 ##########################################################################
