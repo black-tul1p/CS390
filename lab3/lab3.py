@@ -80,11 +80,14 @@ def gramMatrix(x):
     gram = K.dot(features, K.transpose(features))
     return gram
 
+##########################################################################
+
+
 
 #################### Loss Function Builder Functions #####################
 
 def styleLoss(style, gen):
-    return None   #TODO: implement.
+    return (K.sum(K.square(gramMatrix(style) - gramMatrix(gen))) / (4.0 * np.square(style.shape[2]) * np.square(STYLE_IMG_H * STYLE_IMG_W)))
 
 
 def contentLoss(content, gen):
@@ -92,9 +95,11 @@ def contentLoss(content, gen):
 
 
 def totalLoss(x):
-    return None   #TODO: implement.
+    a = K.square(x[:, :STYLE_IMG_H - 1, :STYLE_IMG_W - 1, :] - x[:, 1:, :STYLE_IMG_W - 1, :])
+    b = K.square(x[:, :STYLE_IMG_H - 1, :STYLE_IMG_W - 1, :] - x[:, :STYLE_IMG_W - 1, 1:, :])
+    return K.sum(K.pow(a + b, 1.25))
 
-
+##########################################################################
 
 
 
