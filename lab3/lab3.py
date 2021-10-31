@@ -22,8 +22,8 @@ from tensorflow.keras.preprocessing.image import load_img, img_to_array  #
                                                                          #
 #tf.logging.set_verbosity(tf.logging.ERROR)   # Uncomment for TF1.       #
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"                                 #
-tf.compat.v1.disable_eager_execution()
-tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
+tf.compat.v1.disable_eager_execution()                                   #
+tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)           #
                                                                          #
 random.seed(1618)                                                        #
 np.random.seed(1618)                                                     #
@@ -65,7 +65,6 @@ TOTAL_WEIGHT = 1.0                                                       #
 
 def deprocessImage(img):
     # Reshape input image
-    img = img.copy()
     img = img.reshape((STYLE_IMG_H, STYLE_IMG_W, 3))
 
     # Reverse VGG19 transformations
