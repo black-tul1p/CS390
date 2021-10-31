@@ -5,6 +5,8 @@
 ################################ Imports #################################
                                                                          #
 import os                                                                #
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"  # Set TensorFlow logging level #
+                                                                         #
 import random                                                            #
 import warnings                                                          #
 import cv2 as cv                                                         #
@@ -20,14 +22,11 @@ from tensorflow.keras.preprocessing.image import load_img, img_to_array  #
 
 ######################### Basic Initialization ###########################
                                                                          #
-#tf.logging.set_verbosity(tf.logging.ERROR)   # Uncomment for TF1.       #
-os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"                                 #
 tf.compat.v1.disable_eager_execution()                                   #
 tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)           #
                                                                          #
 random.seed(1618)                                                        #
 np.random.seed(1618)                                                     #
-#tf.set_random_seed(1618)   # Uncomment for TF1.                         #
 tf.random.set_seed(1618)                                                 #
                                                                          #
 CONTENT_IMG_PATH = "./custom/fujairah.jpg"                               #
@@ -70,7 +69,7 @@ def deprocessImage(img):
     # Reverse VGG19 transformations
     img[:, :, 0] += 103.939
     img[:, :, 1] += 116.779
-    img[:, :, 2] += 123.68
+    img[:, :, 2] += 123.680
 
     # Revert image colorspace to RGB
     img = img[:, :, ::-1]
@@ -78,7 +77,7 @@ def deprocessImage(img):
 
 
 def gramMatrix(x):
-    # Check Image Data Format
+    # Check format of image data
     if (K.image_data_format() == "channels_first"):
         features = K.flatten(x)
     else:
@@ -133,7 +132,7 @@ def preprocessData(raw):
     img = img_to_array(img)
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
-        img = cv.resize(img, dsize = (ih, iw))
+        img = cv.resize(img, dsize = (iw, ih))
     img = img.astype("float64")
     img = np.expand_dims(img, axis=0)
     img = vgg19.preprocess_input(img)
@@ -167,7 +166,7 @@ def styleTransfer(cData, sData, tData):
     contentOutput = contentLayer[0, :, :, :]
     contentGenOutput = contentLayer[2, :, :, :]
     loss += CONTENT_WEIGHT * contentLoss(contentOutput, contentGenOutput)
-    
+
     # Compute style loss
     print("   Calculating style loss.")
     for layerName in styleLayerNames:
@@ -180,23 +179,23 @@ def styleTransfer(cData, sData, tData):
     grads = K.gradients(loss, genTensor)
 
     # Setup outputs
-    out = [loss, grads]
+    outputs = [loss, grads]
 
     # Initialize Loss Function
-    kf = K.function([genTensor], out)
-    def getLoss(x):
+    kFun = K.function([genTensor], outputs)
+    def calcLoss(x):
         x = x.reshape((1, STYLE_IMG_H, STYLE_IMG_W, 3))
 
         # Get loss
-        loss, _ = kf([x])
+        loss, _ = kFun([x])
         return (np.array(loss).flatten().astype("float64"))
 
     # Initialize Gradient Function
-    def getGrads(x):
+    def calcGrads(x):
         x = x.reshape((1, STYLE_IMG_H, STYLE_IMG_W, 3))
 
         # Get gradient
-        _, grad = kf([x])
+        _, grad = kFun([x])
         return (np.array(grad).flatten().astype("float64"))
 
     # Perform style transfer
@@ -205,7 +204,7 @@ def styleTransfer(cData, sData, tData):
         print("   Step %d." % i)
 
         # Perform gradient descent using fmin_l_bfgs_b.
-        tData, tLoss, _ = fmin_l_bfgs_b(getLoss, tData.flatten(), getGrads, maxfun = GRAD_DESC_STEP, maxiter = GRAD_DESC_ITER)
+        tData, tLoss, _ = fmin_l_bfgs_b(calcLoss, tData.flatten(), calcGrads, maxfun = GRAD_DESC_STEP, maxiter = GRAD_DESC_ITER)
         print("      Loss: %f." % tLoss)
         
         # Deprocess and save converted image
