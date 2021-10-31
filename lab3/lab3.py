@@ -5,14 +5,13 @@
 ################################ Imports #################################
                                                                          #
 import os                                                                #
-import cv2                                                               #
 import random                                                            #
 import warnings                                                          #
+import cv2 as cv                                                         #
 import numpy as np                                                       #
 import tensorflow as tf                                                  #
 from tensorflow import keras                                             #
 import tensorflow.keras.backend as K                                     #
-from scipy.misc import imsave, imresize                                  #
 from scipy.optimize import fmin_l_bfgs_b                                 #
 from tensorflow.keras.applications import vgg19                          #
 from tensorflow.keras.preprocessing.image import load_img, img_to_array  #
@@ -21,13 +20,15 @@ from tensorflow.keras.preprocessing.image import load_img, img_to_array  #
 
 ######################### Basic Initialization ###########################
                                                                          #
+#tf.logging.set_verbosity(tf.logging.ERROR)   # Uncomment for TF1.       #
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"                                 #
+tf.compat.v1.disable_eager_execution()
+tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
+                                                                         #
 random.seed(1618)                                                        #
 np.random.seed(1618)                                                     #
 #tf.set_random_seed(1618)   # Uncomment for TF1.                         #
 tf.random.set_seed(1618)                                                 #
-                                                                         #
-#tf.logging.set_verbosity(tf.logging.ERROR)   # Uncomment for TF1.       #
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'                                 #
                                                                          #
 CONTENT_IMG_PATH = "./custom/fujairah.jpg"                               #
 STYLE_IMG_PATH   = "./reference/pointillism.jpg"                         #
@@ -37,11 +38,14 @@ OUTPUT_IMG_PATH  = "./output"                                            #
 
 ########################### Global Constants #############################
                                                                          #
-CONTENT_IMG_H = 800                                                      #
-CONTENT_IMG_W = 500                                                      #
+CONTENT_IMG_H = 500                                                      #
+CONTENT_IMG_W = 800                                                      #
                                                                          #
-STYLE_IMG_H = 800                                                        #
-STYLE_IMG_W = 500                                                        #
+STYLE_IMG_H = 500                                                        #
+STYLE_IMG_W = 800                                                        #
+                                                                         #
+GRAD_DESC_STEP = 25                                                      #
+GRAD_DESC_ITER = 1000                                                    #
                                                                          #
 TRANSFER_ROUNDS = 3                                                      #
                                                                          #
@@ -49,8 +53,8 @@ TRANSFER_ROUNDS = 3                                                      #
 
 ############################ TF Hyperparameters ##########################
                                                                          #
-CONTENT_WEIGHT = 0.1    # Alpha weight.                                  #
-STYLE_WEIGHT = 1.0      # Beta weight.                                   #
+CONTENT_WEIGHT = 0.3    # Alpha weight.                                  #
+STYLE_WEIGHT = 100.0    # Beta weight.                                   #
 TOTAL_WEIGHT = 1.0                                                       #
                                                                          #
 ##########################################################################
@@ -61,7 +65,8 @@ TOTAL_WEIGHT = 1.0                                                       #
 
 def deprocessImage(img):
     # Reshape input image
-    img = img.reshape((STYLE_IMG_H, STYLE_IMG_H, 3))
+    img = img.copy()
+    img = img.reshape((STYLE_IMG_H, STYLE_IMG_W, 3))
 
     # Reverse VGG19 transformations
     img[:, :, 0] += 103.939
@@ -70,13 +75,17 @@ def deprocessImage(img):
 
     # Revert image colorspace to RGB
     img = img[:, :, ::-1]
-    img = np.clip(img, 0, 255).astype('uint8')
-
-    return img
+    return np.clip(img, 0, 255).astype("uint8")
 
 
 def gramMatrix(x):
-    features = K.batch_flatten(K.permute_dimensions(x, (2, 0, 1)))
+    # Check Image Data Format
+    if (K.image_data_format() == "channels_first"):
+        features = K.flatten(x)
+    else:
+        features = K.batch_flatten(K.permute_dimensions(x, (2, 0, 1)))
+
+    # Compute and return gram matrix
     gram = K.dot(features, K.transpose(features))
     return gram
 
@@ -87,7 +96,9 @@ def gramMatrix(x):
 #################### Loss Function Builder Functions #####################
 
 def styleLoss(style, gen):
-    return (K.sum(K.square(gramMatrix(style) - gramMatrix(gen))) / (4.0 * np.square(style.shape[2]) * np.square(STYLE_IMG_H * STYLE_IMG_W)))
+    return (K.sum(K.square(gramMatrix(style) - gramMatrix(gen))) / 
+        (4.0 * np.square(style.shape[2]) * 
+            np.square(STYLE_IMG_H * STYLE_IMG_W)))
 
 
 def contentLoss(content, gen):
@@ -95,8 +106,10 @@ def contentLoss(content, gen):
 
 
 def totalLoss(x):
-    a = K.square(x[:, :STYLE_IMG_H - 1, :STYLE_IMG_W - 1, :] - x[:, 1:, :STYLE_IMG_W - 1, :])
-    b = K.square(x[:, :STYLE_IMG_H - 1, :STYLE_IMG_W - 1, :] - x[:, :STYLE_IMG_W - 1, 1:, :])
+    a = K.square(x[:, :STYLE_IMG_H - 1, :STYLE_IMG_W - 1, :]
+     - x[:, 1:, :STYLE_IMG_W - 1, :])
+    b = K.square(x[:, :STYLE_IMG_H - 1, :STYLE_IMG_W - 1, :]
+     - x[:, :STYLE_IMG_H - 1, 1:, :])
     return K.sum(K.pow(a + b, 1.25))
 
 ##########################################################################
@@ -116,61 +129,96 @@ def getRawData():
     return ((cImg, CONTENT_IMG_H, CONTENT_IMG_W), (sImg, STYLE_IMG_H, STYLE_IMG_W), (tImg, CONTENT_IMG_H, CONTENT_IMG_W))
 
 
-
 def preprocessData(raw):
     img, ih, iw = raw
     img = img_to_array(img)
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
-        img = imresize(img, (ih, iw, 3))
+        img = cv.resize(img, dsize = (ih, iw))
     img = img.astype("float64")
     img = np.expand_dims(img, axis=0)
     img = vgg19.preprocess_input(img)
     return img
 
 
-'''
-TODO: Allot of stuff needs to be implemented in this function.
-First, make sure the model is set up properly.
-Then construct the loss function (from content and style loss).
-Gradient functions will also need to be created, or you can use K.Gradients().
-Finally, do the style transfer with gradient descent.
-Save the newly generated and deprocessed images.
-'''
 def styleTransfer(cData, sData, tData):
     print("   Building transfer model.")
+
+    # Initialize image data tensors
     contentTensor = K.variable(cData)
     styleTensor = K.variable(sData)
     genTensor = K.placeholder((1, CONTENT_IMG_H, CONTENT_IMG_W, 3))
     inputTensor = K.concatenate([contentTensor, styleTensor, genTensor], axis=0)
-    model = None   #TODO: implement.
+    
+    # Define and load the VGG19 model
+    model = vgg19.VGG19(include_top = False, weights = "imagenet", input_tensor = inputTensor)
     outputDict = dict([(layer.name, layer.output) for layer in model.layers])
     print("   VGG19 model loaded.")
+    
+    # Initialize loss value
     loss = 0.0
+    
+    # Initialize layer names
     styleLayerNames = ["block1_conv1", "block2_conv1", "block3_conv1", "block4_conv1", "block5_conv1"]
     contentLayerName = "block5_conv2"
+    
+    # Compute content loss
     print("   Calculating content loss.")
     contentLayer = outputDict[contentLayerName]
     contentOutput = contentLayer[0, :, :, :]
-    genOutput = contentLayer[2, :, :, :]
-    loss += None   #TODO: implement.
+    contentGenOutput = contentLayer[2, :, :, :]
+    loss += CONTENT_WEIGHT * contentLoss(contentOutput, contentGenOutput)
+    
+    # Compute style loss
     print("   Calculating style loss.")
     for layerName in styleLayerNames:
-        loss += None   #TODO: implement.
-    loss += None   #TODO: implement.
-    # TODO: Setup gradients or use K.gradients().
+        styleLayer = outputDict[layerName]
+        styleOutput = styleLayer[1, :, :, :]
+        styleGenOutput = styleLayer[2, :, :, :]
+        loss += STYLE_WEIGHT * styleLoss(styleOutput, styleGenOutput)
+
+    # Setup gradients
+    grads = K.gradients(loss, genTensor)
+
+    # Setup outputs
+    out = [loss, grads]
+
+    # Initialize Loss Function
+    kf = K.function([genTensor], out)
+    def getLoss(x):
+        x = x.reshape((1, STYLE_IMG_H, STYLE_IMG_W, 3))
+
+        # Get loss
+        loss, _ = kf([x])
+        return (np.array(loss).flatten().astype("float64"))
+
+    # Initialize Gradient Function
+    def getGrads(x):
+        x = x.reshape((1, STYLE_IMG_H, STYLE_IMG_W, 3))
+
+        # Get gradient
+        _, grad = kf([x])
+        return (np.array(grad).flatten().astype("float64"))
+
+    # Perform style transfer
     print("   Beginning transfer.")
-    for i in range(TRANSFER_ROUNDS):
+    for i in range(1, TRANSFER_ROUNDS + 1):
         print("   Step %d." % i)
-        #TODO: perform gradient descent using fmin_l_bfgs_b.
+
+        # Perform gradient descent using fmin_l_bfgs_b.
+        tData, tLoss, _ = fmin_l_bfgs_b(getLoss, tData.flatten(), getGrads, maxfun = GRAD_DESC_STEP, maxiter = GRAD_DESC_ITER)
         print("      Loss: %f." % tLoss)
-        img = deprocessImage(x)
-        saveFile = None   #TODO: Implement.
-        #imsave(saveFile, img)   #Uncomment when everything is working right.
+        
+        # Deprocess and save converted image
+        img = deprocessImage(tData)
+        img = cv.cvtColor(img, cv.COLOR_BGR2RGB)
+        saveFile = os.path.join(OUTPUT_IMG_PATH, f"conv_{i}.jpg")
+        cv.imwrite(saveFile, img)
         print("      Image saved to \"%s\"." % saveFile)
+
     print("   Transfer complete.")
 
-
+##########################################################################
 
 
 
